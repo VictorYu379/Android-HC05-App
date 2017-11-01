@@ -17,9 +17,6 @@ public class ChatAdapter extends ArrayAdapter<ChatMessage> {
 
     // View lookup cache
     static class ViewHolder {
-
-        @Bind(R.id.time_text_view) TextView time;
-        @Bind(R.id.device_text_view) TextView device;
         @Bind(R.id.message_text_view) TextView message;
 
         public ViewHolder(View view) {
@@ -45,15 +42,6 @@ public class ChatAdapter extends ArrayAdapter<ChatMessage> {
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
-
-
-        // Populate the data into the template view using the data object
-        if (BluetoothActivity.showTimeIsChecked) {
-            viewHolder.time.setText(chatMessage.getTime());
-        } else {
-            viewHolder.time.setText("");
-        }
-        viewHolder.device.setText(chatMessage.getDevice().concat(":"));
         viewHolder.message.setText(chatMessage.getMessage());
         // Return the completed to render on screen
         return convertView;

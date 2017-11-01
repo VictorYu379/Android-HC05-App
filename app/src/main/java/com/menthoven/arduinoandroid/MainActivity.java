@@ -24,7 +24,10 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnItemClick;
 
+import static android.view.MotionEvent.ACTION_DOWN;
+
 public class MainActivity extends AppCompatActivity {
+    private String TAG = "MainActivity";
 
     BluetoothAdapter bluetoothAdapter;
 
@@ -162,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startSearching() {
+//        Log.d(TAG, "haha");
         if (bluetoothAdapter.startDiscovery()) {
             toolbarProgressCircle.setVisibility(View.VISIBLE);
             setStatus("Searching for devices");
@@ -186,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 device.fetchUuidsWithSdp();
 
-                if (bluetoothDevicesAdapter.getPosition(device) == -1) {
+                if (bluetoothDevicesAdapter.getPosition(device) == -1 && device.getName().equals("HC-05")) {
                     // -1 is returned when the item is not in the adapter
                     bluetoothDevicesAdapter.add(device);
                     bluetoothDevicesAdapter.notifyDataSetChanged();

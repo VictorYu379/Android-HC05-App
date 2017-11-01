@@ -38,7 +38,7 @@
 
     <ListView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
         android:id="@+id/chat_list_view"
         android:fastScrollEnabled="true"/>
 
