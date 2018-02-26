@@ -1,5 +1,7 @@
 package com.menthoven.arduinoandroid;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -16,9 +18,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
@@ -27,7 +31,15 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.Viewport;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
+import org.w3c.dom.Text;
+
 import java.lang.ref.WeakReference;
+import java.util.Random;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -38,6 +50,7 @@ public class BluetoothActivity extends AppCompatActivity {
 
     BluetoothService bluetoothService;
     BluetoothDevice device;
+    boolean listViewStatus;
 
     @Bind(R.id.edit_text)
     EditText editText;
@@ -53,6 +66,16 @@ public class BluetoothActivity extends AppCompatActivity {
     ProgressBar toolbalProgressBar;
     @Bind(R.id.coordinator_layout_bluetooth)
     CoordinatorLayout coordinatorLayout;
+    @OnClick(R.id.history_on) void turnHistoryOn() {
+        findViewById(R.id.chat_list_view).setVisibility(View.VISIBLE);
+        listViewStatus = true;
+    }
+    @OnClick(R.id.history_off) void turnHistoryOff() {
+        findViewById(R.id.chat_list_view).setVisibility(View.INVISIBLE);
+        listViewStatus = false;
+    }
+    @Bind(R.id.printView)
+    TextView printView;
 
     MenuItem reconnectButton;
     ChatAdapter chatAdapter;
@@ -63,16 +86,19 @@ public class BluetoothActivity extends AppCompatActivity {
     private boolean autoScrollIsChecked = true;
     public static boolean showTimeIsChecked = true;
 
-    @OnClick(R.id.send_button) void send() {
-        // Send a item_message using content of the edit text widget
-        String message = editText.getText().toString();
-        if (message.trim().length() == 0) {
-            editText.setError("Enter text first");
-        } else {
-            sendMessage(message);
-            editText.setText("");
-        }
-    }
+//    @OnClick(R.id.send_button) void send() {
+//        // Send a item_message using content of the edit text widget
+//        String message = editText.getText().toString();
+//        if (message.trim().length() == 0) {
+//            editText.setError("Enter text first");
+//        } else {
+//            sendMessage(message);
+//            editText.setText("");
+//        }
+//    }
+    private static final Random RANDOM = new Random();
+    private LineGraphSeries<DataPoint> series;
+    private int lastX = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,15 +110,15 @@ public class BluetoothActivity extends AppCompatActivity {
 
         editText.setError("Enter text first");
 
-        editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEND) {
-                    send();
-                    return true;
-                }
-                return false;
-            }
-        });
+//        editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+//            @Override public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+//                if (actionId == EditorInfo.IME_ACTION_SEND) {
+//                    send();
+//                    return true;
+//                }
+//                return false;
+//            }
+//        });
 
         snackTurnOn = Snackbar.make(coordinatorLayout, "Bluetooth turned off", Snackbar.LENGTH_INDEFINITE)
                 .setAction("Turn On", new View.OnClickListener() {
@@ -121,7 +147,26 @@ public class BluetoothActivity extends AppCompatActivity {
 
         bluetoothService = new BluetoothService(handler, device);
 
-        setTitle(device.getName());
+        // we get graph view instance
+        GraphView graph = (GraphView) findViewById(R.id.graph);
+        // data
+        series = new LineGraphSeries<DataPoint>();
+        graph.addSeries(series);
+        // customize a little bit viewport
+        Viewport viewport = graph.getViewport();
+        viewport.setXAxisBoundsManual(true);
+        viewport.setYAxisBoundsManual(true);
+        viewport.setMinY(0);
+        viewport.setMaxY(100);
+        viewport.setScrollable(true);
+        viewport.setScalable(true);
+        System.out.println(graph.getGridLabelRenderer().getLabelsSpace());
+    }
+
+    // add random data to graph
+    private void addEntry(int num) {
+        // here, we choose to display max 10 points on the viewport and we scroll to end
+        series.appendData(new DataPoint(lastX++, num), true, 50);
     }
 
     @Override protected void onStart() {
@@ -249,7 +294,16 @@ public class BluetoothActivity extends AppCompatActivity {
 
     private void addMessageToAdapter(ChatMessage chatMessage) {
         chatAdapter.add(chatMessage);
-        if (autoScrollIsChecked) scrollChatListViewToBottom();
+        if (listViewStatus) {findViewById(R.id.chat_list_view).setVisibility(View.VISIBLE);}
+        else {findViewById(R.id.chat_list_view).setVisibility(View.INVISIBLE);}
+        printView.setText(chatMessage.getMessage());
+        try {
+//            System.out.println(Integer.parseInt(chatMessage.getMessage()));
+            addEntry(Integer.parseInt(chatMessage.getMessage()));
+        } catch (Exception e) {
+        } finally{
+            if (autoScrollIsChecked) scrollChatListViewToBottom();
+        }
     }
 
     private void scrollChatListViewToBottom() {
@@ -257,7 +311,7 @@ public class BluetoothActivity extends AppCompatActivity {
             @Override
             public void run() {
                 // Select the last row so it will scroll into view...
-                chatListView.smoothScrollToPosition(chatAdapter.getCount() - 1);
+                chatListView.setSelection(chatAdapter.getCount() - 1);
             }
         });
     }

@@ -38,9 +38,40 @@
 
     <ListView
         android:layout_width="match_parent"
-        android:layout_height="30dp"
+        android:layout_height="100dp"
         android:id="@+id/chat_list_view"
         android:fastScrollEnabled="true"/>
 
     <include layout="@layout/empty_list_item" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/printView"
+        android:textSize="30sp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/history_on"
+            android:text="History On"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/history_off"
+            android:text="History Off"/>
+
+    </LinearLayout>
+
+    <!-- we add graph view to display -->
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/graph"
+        android:layout_width="match_parent"
+        android:layout_height="280dp" />
 </LinearLayout>

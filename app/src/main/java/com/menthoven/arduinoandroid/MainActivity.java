@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 device.fetchUuidsWithSdp();
 
-                if (bluetoothDevicesAdapter.getPosition(device) == -1 && device.getName().equals("HC-05")) {
+                if (bluetoothDevicesAdapter.getPosition(device) == -1 && device.getName() != null && device.getName().equals("HC-05")) {
                     // -1 is returned when the item is not in the adapter
                     bluetoothDevicesAdapter.add(device);
                     bluetoothDevicesAdapter.notifyDataSetChanged();
